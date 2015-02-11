@@ -81,9 +81,9 @@ Crocodoc.addComponent('page', function (scope) {
 
             config.url = config.url || '';
             pageText = scope.createComponent('page-text');
-            pageContent = support.svg ?
-                    scope.createComponent('page-svg') :
-                    scope.createComponent('page-img');
+            pageContent = hacks.shouldUsePngFallback() ?
+                    scope.createComponent('page-img') :
+                    scope.createComponent('page-svg');
 
             pageText.init($text, pageNum);
             pageContent.init($svg, pageNum);

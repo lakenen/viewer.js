@@ -14,7 +14,7 @@ Crocodoc.addComponent('page-text', function (scope) {
     // Private
     //--------------------------------------------------------------------------
 
-    var browser = scope.getUtility('browser'),
+    var hacks = scope.getUtility('browser-hacks'),
         subpx   = scope.getUtility('subpx');
 
     var destroyed = false,
@@ -30,7 +30,7 @@ Crocodoc.addComponent('page-text', function (scope) {
      * @private
      */
     function shouldUseTextLayer() {
-        return viewerConfig.enableTextSelection && !browser.ielt9;
+        return viewerConfig.enableTextSelection && hacks.shouldUseTextLayer();
     }
 
     /**

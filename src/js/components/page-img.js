@@ -15,13 +15,13 @@ Crocodoc.addComponent('page-img', function (scope) {
     // Private
     //--------------------------------------------------------------------------
 
-    var browser = scope.getUtility('browser');
+    var hacks = scope.getUtility('browser-hacks');
 
     var $img, $el,
         $loadImgPromise,
         page,
         imageLoaded = false,
-        removeOnUnload = browser.mobile;
+        removeOnUnload = hacks.shouldRemoveImgOnUnload();
 
     //--------------------------------------------------------------------------
     // Public

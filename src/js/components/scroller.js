@@ -11,12 +11,12 @@ Crocodoc.addComponent('scroller', function (scope) {
     'use strict';
 
     var util = scope.getUtility('common'),
-        browser = scope.getUtility('browser');
+        hacks = scope.getUtility('browser-hacks');
 
     var GHOST_SCROLL_TIMEOUT = 3000,
         GHOST_SCROLL_INTERVAL = 30,
         SCROLL_EVENT_THROTTLE_INTERVAL = 200,
-        SCROLL_END_TIMEOUT = browser.mobile ? 500 : 250;
+        SCROLL_END_TIMEOUT = hacks.getScrollEndTimeout();
 
     var $el,
         scrollendTID,

@@ -13,6 +13,7 @@ Crocodoc.addComponent('viewer-base', function (scope) {
 
     var util = scope.getUtility('common'),
         browser = scope.getUtility('browser'),
+        hacks = scope.getUtility('browser-hacks'),
         support = scope.getUtility('support');
 
     var api, // the viewer API object
@@ -118,13 +119,13 @@ Crocodoc.addComponent('viewer-base', function (scope) {
             if (!config.enableTextSelection) {
                 api.disableTextSelection();
             }
-        } else if (browser.ielt9) {
+        } else if (!hacks.shouldUseTextLayer()) {
             api.disableTextSelection();
         }
 
         // disable links if necessary
         // @NOTE: links are disabled in IE < 9
-        if (!config.enableLinks || browser.ielt9) {
+        if (!config.enableLinks || !hacks.shouldEnableLinks()) {
             api.disableLinks();
         }
 
@@ -400,26 +401,27 @@ Crocodoc.addComponent('viewer-base', function (scope) {
                 config.metadata = metadata;
             });
 
-            // don't load the stylesheet for IE < 9
-            if (browser.ielt9) {
-                stylesheetEl = util.insertCSS('');
-                config.stylesheet = stylesheetEl.styleSheet;
-                $loadStylesheetPromise = $.when('').promise({
-                    abort: function () {}
-                });
-            } else {
+            // only load the stylesheet if the text layer is used
+            if (hacks.shouldUseTextLayer()) {
                 $loadStylesheetPromise = scope.get('stylesheet');
                 $loadStylesheetPromise.then(function handleStylesheetResponse(cssText) {
                     stylesheetEl = util.insertCSS(cssText);
                     config.stylesheet = stylesheetEl.sheet;
                 });
+            } else {
+                stylesheetEl = util.insertCSS('');
+                config.stylesheet = stylesheetEl.styleSheet;
+                $loadStylesheetPromise = $.when('').promise({
+                    abort: function () {}
+                });
             }
-
 
             // load page 1 assets immediately if necessary
             if (config.autoloadFirstPage &&
                 (!config.pageStart || config.pageStart === 1)) {
-                if (support.svg) {
+
+                // check if we're using svg or png
+                if (!hacks.shouldUsePngFallback()) {
                     $pageOneContentPromise = scope.get('page-svg', 1);
                 } else if (config.conversionIsComplete) {
                     // unfortunately, page-1.png is not necessarily available
