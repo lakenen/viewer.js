@@ -14,8 +14,7 @@ Crocodoc.addComponent('page', function (scope) {
     // Private
     //--------------------------------------------------------------------------
 
-    var support = scope.getUtility('support'),
-        promise = scope.getUtility('promise'),
+    var promise = scope.getUtility('promise'),
         dom = scope.getUtility('dom'),
         util = scope.getUtility('common');
 
@@ -85,9 +84,9 @@ Crocodoc.addComponent('page', function (scope) {
 
             config.url = config.url || '';
             pageText = scope.createComponent('page-text');
-            pageContent = support.svg ?
-                    scope.createComponent('page-svg') :
-                    scope.createComponent('page-img');
+            pageContent = hacks.shouldUsePngFallback() ?
+                    scope.createComponent('page-img') :
+                    scope.createComponent('page-svg');
 
             pageText.init(textEl, pageNum);
             pageContent.init(svgEl, pageNum);

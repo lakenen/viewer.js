@@ -16,11 +16,12 @@ Crocodoc.addComponent('page-links', function (scope) {
 
     var containerEl,
         util = scope.getUtility('common'),
-        browser = scope.getUtility('browser'),
         dom = scope.getUtility('dom'),
+        hacks = scope.getUtility('browser-hacks'),
         linkId = 0,
         spanEls = [],
-        linkData = [];
+        linkData = [],
+        useEventDelegation = hacks.shouldUseEventDelegationForPageLinks();
 
     /**
      * Create a link element given link data
@@ -35,7 +36,8 @@ Crocodoc.addComponent('page-links', function (scope) {
             attr = {};
 
         dom.addClass(linkEl, CSS_CLASS_PAGE_LINK);
-        if (browser.ie) {
+
+        if (!useEventDelegation) {
             // @NOTE: IE doesn't allow override of ctrl+click on anchor tags,
             // but there is a workaround to add a child element (which triggers
             // the onclick event first)
@@ -76,7 +78,7 @@ Crocodoc.addComponent('page-links', function (scope) {
      * @private
      */
     function handleClick(event) {
-        var targetEl = browser.ie ? event.target.parentNode : event.target,
+        var targetEl = useEventDelegation ? event.target : event.target.parentNode,
             linkEl = targetEl,
             data = linkData[dom.data(linkEl, 'link')];
 
@@ -101,7 +103,7 @@ Crocodoc.addComponent('page-links', function (scope) {
         init: function (el, links) {
             containerEl = el;
             this.createLinks(links);
-            if (!browser.ie) {
+            if (useEventDelegation) {
                 // @NOTE: event handlers are individually bound in IE, because
                 // the ctrl+click workaround fails when using event delegation
                 dom.on(el, 'click', '.' + CSS_CLASS_PAGE_LINK, handleClick);

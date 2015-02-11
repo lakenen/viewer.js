@@ -10,8 +10,7 @@ Crocodoc.addDataProvider('page-svg', function(scope) {
 
     var util = scope.getUtility('common'),
         ajax = scope.getUtility('ajax'),
-        browser = scope.getUtility('browser'),
-        subpx = scope.getUtility('subpx'),
+        hacks = scope.getUtility('browser-hacks'),
         config = scope.getConfig(),
         destroyed = false,
         cache = {};
@@ -26,12 +25,7 @@ Crocodoc.addDataProvider('page-svg', function(scope) {
         // CSS text
         var stylesheetHTML = '<style>' + cssText + '</style>';
 
-        // If using Firefox with no subpx support, add "text-rendering" CSS.
-        // @NOTE(plai): We are not adding this to Chrome because Chrome supports "textLength"
-        // on tspans and because the "text-rendering" property slows Chrome down significantly.
-        // In Firefox, we're waiting on this bug: https://bugzilla.mozilla.org/show_bug.cgi?id=890692
-        // @TODO: Use feature detection instead (textLength)
-        if (browser.firefox && !subpx.isSubpxSupported()) {
+        if (hacks.shouldUseTextRenderingGeometricPrecision()) {
             stylesheetHTML += '<style>text { text-rendering: geometricPrecision; }</style>';
         }
 
@@ -124,7 +118,7 @@ Crocodoc.addDataProvider('page-svg', function(scope) {
          */
         destroy: function () {
             destroyed = true;
-            util = ajax = subpx = browser = config = cache = null;
+            util = ajax = hacks = config = cache = null;
         }
     };
 });

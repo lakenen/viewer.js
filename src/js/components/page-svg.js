@@ -17,6 +17,7 @@ Crocodoc.addComponent('page-svg', function (scope) {
     var browser = scope.getUtility('browser'),
         promise = scope.getUtility('promise'),
         dom = scope.getUtility('dom'),
+        hacks = scope.getUtility('browser-hacks'),
         DOMParser = window.DOMParser;
 
     var svgContainerEl,
@@ -27,13 +28,8 @@ Crocodoc.addComponent('page-svg', function (scope) {
         unloaded = false,
         svgLoaded = false,
         viewerConfig = scope.getConfig(),
-        removeOnUnload = browser.mobile || browser.ielt10,
-        // * IE 9-10 and firefox perform better with <img> elements
-        // * IE 11 crashes when using img elements for some reason
-        // * Everything else is happy with iframe + innerhtml
-        embedStrategy = browser.ielt11 || browser.firefox ?
-                        EMBED_STRATEGY_DATA_URL_IMG :
-                        EMBED_STRATEGY_IFRAME_INNERHTML;
+        removeOnUnload = hacks.shouldRemoveSvgOnUnload(),
+        embedStrategy = hacks.getEmbedStrategy();
 
     /**
      * Create and return a jQuery object for the SVG element
@@ -54,7 +50,7 @@ Crocodoc.addComponent('page-svg', function (scope) {
                 el = dom.create('object');
                 dom.attr(el, {
                     type: SVG_MIME_TYPE,
-                    data: 'data:'+SVG_MIME_TYPE+';base64,' + window.btoa(SVG_CONTAINER_TEMPLATE)
+                    data: hacks.getDataURL(SVG_CONTAINER_TEMPLATE, SVG_MIME_TYPE)
                 });
                 break;
 
@@ -143,7 +139,6 @@ Crocodoc.addComponent('page-svg', function (scope) {
             svgDoc,
             svgEl,
             html,
-            dataURLPrefix,
             contentDocument = svgContainerEl.contentDocument,
             contentWindow = svgContainerEl.contentWindow ||
                              // @NOTE: supports older versions of ff
@@ -162,9 +157,8 @@ Crocodoc.addComponent('page-svg', function (scope) {
                     contentDocument.body.innerHTML = html;
                 } else {
                     contentDocument.documentElement.innerHTML = html;
-                    // @NOTE: there is a bug in Safari 6 where <use>
-                    // elements don't work properly
-                    if ((browser.ios || browser.safari) && browser.version < 7) {
+
+                    if (hacks.shouldFixUseElements()) {
                         fixUseElements(contentDocument);
                     }
                 }
@@ -230,12 +224,7 @@ Crocodoc.addComponent('page-svg', function (scope) {
 
             case EMBED_STRATEGY_DATA_URL_IMG:
                 svgEl = svgContainerEl;
-                dataURLPrefix = 'data:' + SVG_MIME_TYPE;
-                if (!browser.ie && window.btoa) {
-                    svgEl.src = dataURLPrefix + ';base64,' + window.btoa(svgText);
-                } else {
-                    svgEl.src = dataURLPrefix + ',' + encodeURIComponent(svgText);
-                }
+                svgEl.src = hacks.getDataURL(svgText, SVG_MIME_TYPE);
                 break;
 
             // no default

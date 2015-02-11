@@ -17,8 +17,8 @@ Crocodoc.addComponent('lazy-loader', function (scope) {
     //--------------------------------------------------------------------------
 
     var util = scope.getUtility('common'),
-        browser = scope.getUtility('browser'),
         promise = scope.getUtility('promise'),
+        hacks = scope.getUtility('browser-hacks'),
         api = {},
         pages,
         numPages,
@@ -272,10 +272,7 @@ Crocodoc.addComponent('lazy-loader', function (scope) {
         init: function (pageComponents) {
             pages = pageComponents;
             numPages = pages.length;
-            pageLoadRange = (browser.mobile || browser.ielt10) ?
-                MAX_PAGE_LOAD_RANGE_MOBILE :
-                MAX_PAGE_LOAD_RANGE;
-            pageLoadRange = Math.min(pageLoadRange, numPages);
+            pageLoadRange = hacks.getPageLoadRange(numPages);
         },
 
         /**

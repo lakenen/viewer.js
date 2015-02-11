@@ -6,9 +6,11 @@ Crocodoc.addDataProvider('stylesheet', function(scope) {
     'use strict';
 
     var ajax = scope.getUtility('ajax'),
-        browser = scope.getUtility('browser'),
+        hacks = scope.getUtility('browser-hacks'),
         config = scope.getConfig(),
         cachedPromise;
+
+    var FONT_FAMILY_REGEXP = /font-family:[\s\"\']*([\w-]+)\b/g;
 
     /**
      * Process stylesheet text and return the embeddable result
@@ -21,9 +23,8 @@ Crocodoc.addDataProvider('stylesheet', function(scope) {
         // not render the font when loaded for a second time (i.e.,
         // destroy and recreate a viewer for the same document), so
         // namespace the font-family so there is no collision
-        if (browser.ie) {
-            text = text.replace(/font-family:[\s\"\']*([\w-]+)\b/g,
-                '$0-' + config.id);
+        if (hacks.shouldNamespaceFonts()) {
+            text = text.replace(FONT_FAMILY_REGEXP, '$0-' + config.id);
         }
 
         return text;
@@ -71,8 +72,7 @@ Crocodoc.addDataProvider('stylesheet', function(scope) {
          * @returns {void}
          */
         destroy: function () {
-            ajax = browser = config = null;
-            cachedPromise = null;
+            ajax = hacks = config = cachedPromise = null;
         }
     };
 });

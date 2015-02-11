@@ -16,7 +16,7 @@ Crocodoc.addComponent('layout-paged', ['layout-base'], function (scope, base) {
 
     var util = scope.getUtility('common'),
         dom = scope.getUtility('dom'),
-        support = scope.getUtility('support');
+        hacks = scope.getUtility('browser-hacks');
 
     /**
      * Apply a zoom transform to the layout using width/height
@@ -27,25 +27,13 @@ Crocodoc.addComponent('layout-paged', ['layout-base'], function (scope, base) {
      */
     function applyZoomResize(layout, zoom) {
         // manually resize pages width/height
-        var i, len, pageState, cssRule,
+        var i, len, pageState,
             state = layout.state,
             selector = '.' + layout.config.namespace + ' .' + CSS_CLASS_PAGE_AUTOSCALE,
             stylesheet = layout.config.stylesheet,
             pages = state.pages,
             scale = zoom * layout.config.pageScale,
-            percent = 100 / scale;
-
-        // apply css transform or zoom to autoscale layer (eg., text, links, user content)
-        if (support.csstransform) {
-            cssRule = support.csstransform + ':scale(' + scale + ');' +
-                'width:' + percent + '%;' +
-                'height:' + percent + '%;';
-        } else if (support.csszoom) {
-            cssRule = 'zoom:' + scale;
-        } else {
-            // should not happen...
-            cssRule = '';
-        }
+            cssRule = hacks.getPageScaleCSS(scale);
 
         // remove the previous style if there is one
         if (state.previousStyleIndex) {
